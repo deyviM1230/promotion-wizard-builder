@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { PromotionFormData } from "@/lib/promotionSchema";
 
 type WizardStep = 1 | 2 | 3 | 4;
@@ -12,6 +12,10 @@ interface WizardContextType {
   updateFormData: (data: Partial<PromotionFormData>) => void;
   canGoNext: boolean;
   setCanGoNext: (can: boolean) => void;
+  isEditing: boolean;
+  promotionId: string | null;
+  isDirty: boolean;
+  setIsDirty: (dirty: boolean) => void;
 }
 
 const WizardContext = createContext<WizardContextType | undefined>(undefined);
@@ -26,10 +30,33 @@ const initialFormData: Partial<PromotionFormData> = {
   rewards: [],
 };
 
-export function WizardProvider({ children }: { children: React.ReactNode }) {
+interface WizardProviderProps {
+  children: React.ReactNode;
+  initialData?: Partial<PromotionFormData>;
+  isEditing?: boolean;
+  promotionId?: string | null;
+}
+
+export function WizardProvider({ 
+  children, 
+  initialData, 
+  isEditing = false, 
+  promotionId = null 
+}: WizardProviderProps) {
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
-  const [formData, setFormData] = useState<Partial<PromotionFormData>>(initialFormData);
+  const [formData, setFormData] = useState<Partial<PromotionFormData>>(
+    initialData || initialFormData
+  );
   const [canGoNext, setCanGoNext] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
+  // Reset form data when initialData changes (for edit mode)
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+      setIsDirty(false);
+    }
+  }, [initialData]);
 
   const setStep = useCallback((step: WizardStep) => {
     setCurrentStep(step);
@@ -45,6 +72,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
 
   const updateFormData = useCallback((data: Partial<PromotionFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
+    setIsDirty(true);
   }, []);
 
   return (
@@ -58,6 +86,10 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
         updateFormData,
         canGoNext,
         setCanGoNext,
+        isEditing,
+        promotionId,
+        isDirty,
+        setIsDirty,
       }}
     >
       {children}
