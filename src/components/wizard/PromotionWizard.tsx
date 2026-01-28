@@ -1,31 +1,48 @@
-import { WizardProvider, useWizard } from "@/context/WizardContext";
+import { useWizard } from "@/context/WizardContext";
 import { WizardProgress } from "./WizardProgress";
 import { Step1GeneralConfig } from "./Step1GeneralConfig";
 import { Step2Rules } from "./Step2Rules";
 import { Step3Rewards } from "./Step3Rewards";
 import { Step4Summary } from "./Step4Summary";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sparkles, ArrowLeft } from "lucide-react";
 
-function WizardContent() {
+interface PromotionWizardProps {
+  onBack?: () => void;
+}
+
+export function PromotionWizard({ onBack }: PromotionWizardProps) {
   const { currentStep } = useWizard();
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center gap-2 mb-4">
-            <div className="p-2 rounded-lg bg-brand-teal/10">
-              <Sparkles className="h-6 w-6 text-brand-teal" />
+        <div className="mb-8">
+          {onBack && (
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="mb-4 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Volver al Dashboard
+            </Button>
+          )}
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center gap-2 mb-4">
+              <div className="p-2 rounded-lg bg-brand-teal/10">
+                <Sparkles className="h-6 w-6 text-brand-teal" />
+              </div>
+              <h1 className="text-3xl font-bold text-foreground">
+                Motor de Promociones
+              </h1>
             </div>
-            <h1 className="text-3xl font-bold text-text-dark">
-              Motor de Promociones
-            </h1>
+            <p className="text-muted-foreground">
+              Crea promociones inteligentes para tu minimarket
+            </p>
           </div>
-          <p className="text-text-gray">
-            Crea promociones inteligentes para tu minimarket
-          </p>
         </div>
 
         {/* Progress Bar */}
@@ -42,13 +59,5 @@ function WizardContent() {
         </Card>
       </div>
     </div>
-  );
-}
-
-export function PromotionWizard() {
-  return (
-    <WizardProvider>
-      <WizardContent />
-    </WizardProvider>
   );
 }
