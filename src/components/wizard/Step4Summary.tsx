@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Check, Calendar, Target, Gift, Sparkles } from "lucide-react";
+import { Check, Calendar, Target, Gift, Sparkles, Plus, Save } from "lucide-react";
 import { useWizard } from "@/context/WizardContext";
 import {
   getRuleTypeLabel,
@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export function Step4Summary() {
-  const { formData, prevStep } = useWizard();
+  const { formData, prevStep, isEditing, isDirty } = useWizard();
 
   const generateNaturalLanguageSummary = () => {
     const rules = formData.rules || [];
@@ -69,11 +69,17 @@ export function Step4Summary() {
     };
   };
 
-  const handleCreate = () => {
+  const handleSubmit = () => {
     const finalData = generateFinalJSON();
-    console.log("Promoción creada:", finalData);
-    alert("¡Promoción creada exitosamente! Revisa la consola para ver el JSON.");
+    console.log(isEditing ? "Promoción actualizada:" : "Promoción creada:", finalData);
+    alert(isEditing 
+      ? "¡Cambios guardados exitosamente! Revisa la consola para ver el JSON."
+      : "¡Promoción creada exitosamente! Revisa la consola para ver el JSON."
+    );
   };
+
+  // In edit mode, disable the button if no changes have been made
+  const isSubmitDisabled = isEditing && !isDirty;
 
   const jsonPreview = JSON.stringify(generateFinalJSON(), null, 2);
 
@@ -245,11 +251,25 @@ export function Step4Summary() {
           Anterior
         </Button>
         <Button
-          onClick={handleCreate}
-          className="bg-brand-orange hover:bg-brand-orange-hover text-white font-medium px-8"
+          onClick={handleSubmit}
+          disabled={isSubmitDisabled}
+          className={`text-white font-medium px-8 transition-all ${
+            isEditing 
+              ? 'bg-brand-teal hover:bg-brand-teal/90' 
+              : 'bg-brand-orange hover:bg-brand-orange-hover'
+          } ${isSubmitDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          <Check className="mr-2 h-4 w-4" />
-          Crear Promoción
+          {isEditing ? (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Guardar Cambios
+            </>
+          ) : (
+            <>
+              <Plus className="mr-2 h-4 w-4" />
+              Crear Promoción
+            </>
+          )}
         </Button>
       </div>
     </div>
