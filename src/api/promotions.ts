@@ -1,7 +1,7 @@
+import type { PromotionBackendDTO } from "../lib/promotionSchema";
 import { api } from "./axios";
 
-// 1. Interfaz para lo que RECIBES al listar (GET)
-// Coincide con tu JSON: id, name, description, startDate, endDate, isActive
+// 1. Interfaz para lo que RECIBES en la lista (GET)
 export interface PromotionListItem {
   id: string;
   name: string;
@@ -12,7 +12,7 @@ export interface PromotionListItem {
 }
 
 // 2. Interfaz para lo que ENVÍAS al crear (POST)
-// Estructura anidada para conditions y actions
+// Esta es la estructura que generó nuestro mapper
 export interface CreatePromotionPayload {
   name: string;
   description: string;
@@ -30,16 +30,32 @@ export interface CreatePromotionPayload {
 }
 
 export const promotionApi = {
-  // GET: Listar promociones (Devuelve la lista simple)
+  // GET: Listar promociones
   getAll: async () => {
     const { data } = await api.get<PromotionListItem[]>("/promotions");
     return data;
   },
 
-  // POST: Crear promoción (Envía la estructura compleja)
+  // GET: Detalle
+  getById: async (id: string) => {
+    const { data } = await api.get<PromotionBackendDTO>(`/promotions/${id}`);
+    return data;
+  },
+
+  // POST: Crear promoción (Usa el Payload correcto)
   create: async (payload: CreatePromotionPayload) => {
-    // Asumimos que el backend devuelve la promoción creada (puede ser simple o completa)
     const { data } = await api.post<PromotionListItem>("/promotions", payload);
     return data;
+  },
+
+  // PUT: Actualizar
+  update: async (id: string, payload: Partial<CreatePromotionPayload>) => {
+    const { data } = await api.put<PromotionBackendDTO>(`/promotions/${id}`, payload);
+    return data;
+  },
+
+  // DELETE: Eliminar
+  delete: async (id: string) => {
+    await api.delete(`/promotions/${id}`);
   },
 };
