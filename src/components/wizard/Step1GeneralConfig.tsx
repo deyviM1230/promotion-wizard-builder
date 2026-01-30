@@ -104,32 +104,6 @@ export function Step1GeneralConfig() {
 						)}
 					/>
 
-					{/* Prioridad */}
-					<FormField
-						control={form.control}
-						name="priority"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className="text-text-dark font-medium">
-									Prioridad (1-10)
-								</FormLabel>
-								<FormControl>
-									<Input
-										type="number"
-										min={1}
-										max={10}
-										className="w-32 border-border focus:border-brand-teal focus:ring-brand-teal"
-										{...field}
-									/>
-								</FormControl>
-								<FormDescription className="text-text-gray text-sm">
-									Mayor número = mayor prioridad al aplicar promociones
-								</FormDescription>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
 					{/* Date Range Picker */}
 					<FormField
 						control={form.control}
@@ -188,6 +162,10 @@ export function Step1GeneralConfig() {
 											onSelect={field.onChange}
 											numberOfMonths={2}
 											className="pointer-events-auto"
+											disabled={(date) => {
+												// Bloquea cualquier fecha menor al inicio del día de hoy (00:00:00)
+												return date < new Date(new Date().setHours(0, 0, 0, 0));
+											}}
 										/>
 									</PopoverContent>
 								</Popover>

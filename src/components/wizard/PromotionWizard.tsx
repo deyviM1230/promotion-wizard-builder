@@ -1,8 +1,9 @@
 import { ArrowLeft, Pencil, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // <--- Para navegar al salir
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useWizard } from "@/context/WizardContext";
+import { useWizard, WizardProvider } from "@/context/WizardContext"; // <--- Importamos el Provider
 import { Step1GeneralConfig } from "./Step1GeneralConfig";
 import { Step2Rules } from "./Step2Rules";
 import { Step3Rewards } from "./Step3Rewards";
@@ -15,27 +16,34 @@ interface PromotionWizardProps {
 	isLoading?: boolean;
 }
 
-export function PromotionWizard({
-	onBack,
-	isLoading = false,
-}: PromotionWizardProps) {
+// 1. Componente INTERNO: Contiene la lógica visual y usa el hook useWizard
+function WizardContent({ onBack, isLoading = false }: PromotionWizardProps) {
 	const { currentStep, isEditing, promotionId } = useWizard();
+	const navigate = useNavigate();
+
+	// Función para manejar el botón de volver
+	const handleBack = () => {
+		if (onBack) {
+			onBack();
+		} else {
+			navigate("/"); // Si no hay prop onBack, navegamos al home
+		}
+	};
 
 	return (
 		<div className="min-h-screen bg-background py-8 px-4">
 			<div className="max-w-4xl mx-auto">
 				{/* Header */}
 				<div className="mb-8">
-					{onBack && (
-						<Button
-							variant="ghost"
-							onClick={onBack}
-							className="mb-4 text-muted-foreground hover:text-foreground"
-						>
-							<ArrowLeft className="mr-2 h-4 w-4" />
-							Volver al Dashboard
-						</Button>
-					)}
+					<Button
+						variant="ghost"
+						onClick={handleBack}
+						className="mb-4 text-muted-foreground hover:text-foreground"
+					>
+						<ArrowLeft className="mr-2 h-4 w-4" />
+						Volver al Dashboard
+					</Button>
+
 					<div className="text-center">
 						<div className="inline-flex items-center justify-center gap-2 mb-4">
 							<div
@@ -87,5 +95,14 @@ export function PromotionWizard({
 				</Card>
 			</div>
 		</div>
+	);
+}
+
+// 2. Componente PRINCIPAL: Envuelve todo con el Provider
+export function PromotionWizard(props: PromotionWizardProps) {
+	return (
+		<WizardProvider>
+			<WizardContent {...props} />
+		</WizardProvider>
 	);
 }

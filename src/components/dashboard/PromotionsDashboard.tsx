@@ -2,20 +2,16 @@ import { Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+// Asegúrate de que este tipo coincida con el que exportas en tu API o Schema
+import type { PromotionListItem } from "@/api/promotions";
 import { useDeletePromotion, usePromotions } from "@/hooks/usePromotions";
-import type { PromotionBackendDTO } from "@/lib/promotionSchema";
 import { DashboardHeader } from "./DashboardHeader";
 import { DashboardToolbar } from "./DashboardToolbar";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { PromotionsTable } from "./PromotionsTable";
 
-interface PromotionsDashboardProps {
-	onNewPromotion: () => void;
-}
-
-export const PromotionsDashboard = ({
-	onNewPromotion,
-}: PromotionsDashboardProps) => {
+// 1. Ya no necesitamos recibir props desde fuera
+export const PromotionsDashboard = () => {
 	const navigate = useNavigate();
 
 	// HOOKS: Datos del servidor
@@ -26,12 +22,13 @@ export const PromotionsDashboard = ({
 	const [searchQuery, setSearchQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	// Ajusta el tipo aquí al que devuelve tu API (PromotionListItem)
 	const [promotionToDelete, setPromotionToDelete] =
-		useState<PromotionBackendDTO | null>(null);
+		useState<PromotionListItem | null>(null);
 
 	// LÓGICA: Filtrado
 	const filteredPromotions = useMemo(() => {
-		const data = promotions || []; // Protección contra undefined
+		const data = promotions || [];
 
 		return data.filter((promo) => {
 			// Filtro de Búsqueda
@@ -39,7 +36,7 @@ export const PromotionsDashboard = ({
 				.toLowerCase()
 				.includes(searchQuery.toLowerCase());
 
-			// Filtro de Estado (Usando isActive del backend)
+			// Filtro de Estado
 			const matchesStatus =
 				statusFilter === "all" ||
 				(statusFilter === "active" && promo.isActive === true) ||
@@ -51,28 +48,26 @@ export const PromotionsDashboard = ({
 
 	// ACCIONES
 	const handleToggleStatus = (id: string, active: boolean) => {
-		// TODO: Implementar mutación de toggle real
 		console.log("Toggle status:", id, active);
-		toast.info("Funcionalidad de activar/desactivar en desarrollo");
+		toast.info("Funcionalidad de activar/desactivar en desarrollo 🚧");
 	};
 
-	const handleEdit = (promotion: PromotionBackendDTO) => {
+	const handleEdit = (promotion: PromotionListItem) => {
+		// Redirige al wizard en modo edición (requerirá configurar la ruta /edit/:id)
 		navigate(`/edit/${promotion.id}`);
 	};
 
-	const handleDuplicate = (_promotion: PromotionBackendDTO) => {
-		// TODO: Implementar lógica de duplicar (podría ser una mutación create con los mismos datos)
-		toast.info("Duplicar próximamente");
+	const handleDuplicate = (_promotion: PromotionListItem) => {
+		toast.info("Duplicar próximamente 🚧");
 	};
 
-	const handleDeleteClick = (promotion: PromotionBackendDTO) => {
+	const handleDeleteClick = (promotion: PromotionListItem) => {
 		setPromotionToDelete(promotion);
 		setDeleteDialogOpen(true);
 	};
 
 	const handleConfirmDelete = () => {
 		if (promotionToDelete) {
-			// Usamos la mutación de TanStack Query
 			deleteMutation.mutate(promotionToDelete.id);
 			setDeleteDialogOpen(false);
 			setPromotionToDelete(null);
@@ -83,7 +78,7 @@ export const PromotionsDashboard = ({
 	if (isLoading) {
 		return (
 			<div className="flex h-screen w-full items-center justify-center">
-				<Loader2 className="h-10 w-10 animate-spin text-[#21B2B6]" />
+				<Loader2 className="h-10 w-10 animate-spin text-brand-teal" />
 				<span className="ml-3 text-lg font-medium text-gray-600">
 					Cargando promociones...
 				</span>
@@ -101,7 +96,7 @@ export const PromotionsDashboard = ({
 					className="mt-4 underline"
 				>
 					Reintentar
-				</button>{" "}
+				</button>
 			</div>
 		);
 	}
@@ -111,7 +106,8 @@ export const PromotionsDashboard = ({
 		<div className="min-h-screen bg-background">
 			<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 				<div className="space-y-8">
-					<DashboardHeader onNewPromotion={onNewPromotion} />
+					{/* 2. Eliminamos la prop onNewPromotion aquí también */}
+					<DashboardHeader />
 
 					<DashboardToolbar
 						searchQuery={searchQuery}

@@ -1,11 +1,13 @@
 import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
-interface DashboardHeaderProps {
-	onNewPromotion: () => void;
-}
+// Ya no necesitamos recibir onNewPromotion como prop si navegamos directamente
+type DashboardHeaderProps = {};
 
-export const DashboardHeader = ({ onNewPromotion }: DashboardHeaderProps) => {
+export const DashboardHeader = ({}: DashboardHeaderProps) => {
+	const navigate = useNavigate();
+
 	return (
 		<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 			<div>
@@ -17,7 +19,8 @@ export const DashboardHeader = ({ onNewPromotion }: DashboardHeaderProps) => {
 				</p>
 			</div>
 			<Button
-				onClick={onNewPromotion}
+				// --- CAMBIO CLAVE AQUÍ ---
+				onClick={() => navigate("/create")}
 				className="bg-brand-orange hover:bg-brand-orange-hover text-white"
 			>
 				<Plus className="mr-2 h-4 w-4" />

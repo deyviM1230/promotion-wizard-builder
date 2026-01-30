@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+// Importa tu componente principal del Wizard
+import { PromotionWizard } from "./components/wizard/PromotionWizard";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -17,8 +19,12 @@ const App = () => (
 				future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
 			>
 				<Routes>
+					{/* El Dashboard está en la raíz */}
 					<Route path="/" element={<Index />} />
-					{/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+					{/* --- NUEVA RUTA PARA EL WIZARD --- */}
+					<Route path="/create" element={<PromotionWizard />} />
+
 					<Route path="*" element={<NotFound />} />
 				</Routes>
 			</BrowserRouter>
