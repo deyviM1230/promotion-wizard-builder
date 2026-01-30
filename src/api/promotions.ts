@@ -1,39 +1,45 @@
-import type {
-	PromotionBackendDTO,
-	PromotionFormData,
-} from "../lib/promotionSchema";
 import { api } from "./axios";
+
+// 1. Interfaz para lo que RECIBES al listar (GET)
+// Coincide con tu JSON: id, name, description, startDate, endDate, isActive
+export interface PromotionListItem {
+  id: string;
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+}
+
+// 2. Interfaz para lo que ENVÍAS al crear (POST)
+// Estructura anidada para conditions y actions
+export interface CreatePromotionPayload {
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  condition: {
+    conditionType: string;
+    configuration: Record<string, any>;
+  };
+  action: {
+    actionType: string;
+    configuration: Record<string, any>;
+  };
+}
+
 export const promotionApi = {
-	// Obtener todas
-	getAll: async () => {
-		// 1. Hacemos la petición a '/promotions'
-		const { data } = await api.get<PromotionBackendDTO[]>("/promotions");
-		return data;
-	},
+  // GET: Listar promociones (Devuelve la lista simple)
+  getAll: async () => {
+    const { data } = await api.get<PromotionListItem[]>("/promotions");
+    return data;
+  },
 
-	// Obtener una por ID
-	getById: async (id: string) => {
-		const { data } = await api.get<PromotionFormData>(`/promotions/${id}`);
-		return data;
-	},
-
-	// Crear
-	create: async (promo: PromotionFormData) => {
-		const { data } = await api.post<PromotionFormData>("/promotions", promo);
-		return data;
-	},
-
-	// Actualizar
-	update: async (id: string, promo: Partial<PromotionFormData>) => {
-		const { data } = await api.put<PromotionFormData>(
-			`/promotions/${id}`,
-			promo,
-		);
-		return data;
-	},
-
-	// Eliminar
-	delete: async (id: string) => {
-		await api.delete(`/promotions/${id}`);
-	},
+  // POST: Crear promoción (Envía la estructura compleja)
+  create: async (payload: CreatePromotionPayload) => {
+    // Asumimos que el backend devuelve la promoción creada (puede ser simple o completa)
+    const { data } = await api.post<PromotionListItem>("/promotions", payload);
+    return data;
+  },
 };

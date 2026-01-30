@@ -5,300 +5,226 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { useWizard } from "@/context/WizardContext";
 import {
-	categories,
-	customerTags,
-	ruleTypes,
-	type Step2Data,
-	step2Schema,
+  type Step2Data,
+  step2Schema,
 } from "@/lib/promotionSchema";
+import { useConditionsMetadata } from "@/hooks/useMetadata";
+import { CONDITION_REGISTRY } from "@/lib/componentRegistry";
 
 export function Step2Rules() {
-	const { formData, updateFormData, nextStep, prevStep } = useWizard();
+  const { formData, updateFormData, nextStep, prevStep } = useWizard();
 
-	const form = useForm<Step2Data>({
-		resolver: zodResolver(step2Schema),
-		defaultValues: {
-			rules: formData.rules?.length ? formData.rules : [],
-		},
-		mode: "onChange",
-	});
+  // 1. Obtenemos las reglas disponibles del backend
+  const { data: availableConditions = [], isLoading } = useConditionsMetadata();
 
-	const { fields, append, remove } = useFieldArray({
-		control: form.control,
-		name: "rules",
-	});
+  const form = useForm<Step2Data>({
+    resolver: zodResolver(step2Schema),
+    defaultValues: {
+      rules: formData.rules?.length ? formData.rules : [],
+    },
+    mode: "onChange",
+  });
 
-	const addRule = () => {
-		append({
-			id: crypto.randomUUID(),
-			type: "minAmount",
-			value: "",
-		});
-	};
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "rules",
+  });
 
-	const onSubmit = (data: Step2Data) => {
-		updateFormData(data);
-		nextStep();
-	};
+  const addRule = () => {
+    append({
+      id: crypto.randomUUID(),
+      // Usamos la primera regla disponible como default, o cadena vacía si no hay
+      type: availableConditions.length > 0 ? availableConditions[0] : "",
+      value: "",
+    });
+  };
 
-	const handleBack = () => {
-		updateFormData({ rules: form.getValues().rules });
-		prevStep();
-	};
+  const onSubmit = (data: Step2Data) => {
+    updateFormData(data);
+    nextStep();
+  };
 
-	return (
-		<div className="space-y-6">
-			<div className="space-y-2">
-				<h2 className="text-2xl font-semibold text-text-dark">
-					Condiciones para activar
-				</h2>
-				<p className="text-text-gray">
-					Define las reglas que deben cumplirse para aplicar esta promoción
-				</p>
-			</div>
+  const handleBack = () => {
+    updateFormData({ rules: form.getValues().rules });
+    prevStep();
+  };
 
-			<Form {...form}>
-				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-					{/* Rules List */}
-					<div className="space-y-4">
-						{fields.map((field, index) => (
-							<div key={field.id}>
-								{/* AND Connector */}
-								{index > 0 && (
-									<div className="flex items-center justify-center my-4">
-										<div className="flex-1 h-px bg-connector-line" />
-										<span className="mx-4 px-3 py-1 text-xs font-medium text-brand-teal bg-brand-teal/10 rounded-full border border-brand-teal/20">
-											Y (AND)
-										</span>
-										<div className="flex-1 h-px bg-connector-line" />
-									</div>
-								)}
+  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Cargando reglas disponibles...</div>;
 
-								<Card className="border-border hover:border-brand-teal/40 transition-colors">
-									<CardContent className="pt-6">
-										<div className="flex flex-col md:flex-row gap-4">
-											{/* Rule Type Select */}
-											<FormField
-												control={form.control}
-												name={`rules.${index}.type`}
-												render={({ field: typeField }) => (
-													<FormItem className="flex-1">
-														<FormLabel className="text-text-dark font-medium">
-															Tipo de regla
-														</FormLabel>
-														<Select
-															value={typeField.value}
-															onValueChange={(value) => {
-																typeField.onChange(value);
-																// Reset value when type changes
-																form.setValue(`rules.${index}.value`, "");
-															}}
-														>
-															<FormControl>
-																<SelectTrigger className="border-border focus:ring-brand-teal">
-																	<SelectValue placeholder="Selecciona tipo" />
-																</SelectTrigger>
-															</FormControl>
-															<SelectContent className="bg-background border-border">
-																{ruleTypes.map((type) => (
-																	<SelectItem
-																		key={type.value}
-																		value={type.value}
-																	>
-																		{type.label}
-																	</SelectItem>
-																))}
-															</SelectContent>
-														</Select>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
+  return (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h2 className="text-2xl font-semibold text-text-dark">
+          Condiciones para activar
+        </h2>
+        <p className="text-text-gray">
+          Define las reglas que deben cumplirse para aplicar esta promoción
+        </p>
+      </div>
 
-											{/* Dynamic Value Field */}
-											<FormField
-												control={form.control}
-												name={`rules.${index}.value`}
-												render={({ field: valueField }) => {
-													const ruleType = form.watch(`rules.${index}.type`);
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Rules List */}
+          <div className="space-y-4">
+            {fields.map((field, index) => {
+                // 2. Detectamos el tipo seleccionado para esta fila
+                const currentType = form.watch(`rules.${index}.type`);
+                // 3. Buscamos el componente correspondiente en el registro
+                const RegistryEntry = CONDITION_REGISTRY[currentType];
+                const DynamicComponent = RegistryEntry?.component;
 
-													if (ruleType === "minAmount") {
-														return (
-															<FormItem className="flex-1">
-																<FormLabel className="text-text-dark font-medium">
-																	Monto mínimo ($)
-																</FormLabel>
-																<FormControl>
-																	<Input
-																		type="number"
-																		min={0}
-																		placeholder="Ej: 50"
-																		className="border-border focus:border-brand-teal focus:ring-brand-teal"
-																		value={valueField.value as string}
-																		onChange={(e) =>
-																			valueField.onChange(
-																				Number(e.target.value),
-																			)
-																		}
-																	/>
-																</FormControl>
-																<FormMessage />
-															</FormItem>
-														);
-													}
+                return (
+                  <div key={field.id}>
+                    {/* AND Connector */}
+                    {index > 0 && (
+                      <div className="flex items-center justify-center my-4">
+                        <div className="flex-1 h-px bg-connector-line" />
+                        <span className="mx-4 px-3 py-1 text-xs font-medium text-brand-teal bg-brand-teal/10 rounded-full border border-brand-teal/20">
+                          Y (AND)
+                        </span>
+                        <div className="flex-1 h-px bg-connector-line" />
+                      </div>
+                    )}
 
-													if (ruleType === "category") {
-														return (
-															<FormItem className="flex-1">
-																<FormLabel className="text-text-dark font-medium">
-																	Categoría
-																</FormLabel>
-																<Select
-																	value={valueField.value as string}
-																	onValueChange={valueField.onChange}
-																>
-																	<FormControl>
-																		<SelectTrigger className="border-border focus:ring-brand-teal">
-																			<SelectValue placeholder="Selecciona categoría" />
-																		</SelectTrigger>
-																	</FormControl>
-																	<SelectContent className="bg-background border-border">
-																		{categories.map((cat) => (
-																			<SelectItem
-																				key={cat.value}
-																				value={cat.value}
-																			>
-																				{cat.label}
-																			</SelectItem>
-																		))}
-																	</SelectContent>
-																</Select>
-																<FormMessage />
-															</FormItem>
-														);
-													}
+                    <Card className="border-border hover:border-brand-teal/40 transition-colors">
+                      <CardContent className="pt-6">
+                        <div className="flex flex-col md:flex-row gap-4">
+                          
+                          {/* SELECTOR DE TIPO DE REGLA */}
+                          <FormField
+                            control={form.control}
+                            name={`rules.${index}.type`}
+                            render={({ field: typeField }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel className="text-text-dark font-medium">
+                                  Tipo de regla
+                                </FormLabel>
+                                <Select
+                                  value={typeField.value}
+                                  onValueChange={(value) => {
+                                    typeField.onChange(value);
+                                    // Reseteamos el valor al cambiar el tipo
+                                    form.setValue(`rules.${index}.value`, "");
+                                  }}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger className="border-border focus:ring-brand-teal">
+                                      <SelectValue placeholder="Selecciona tipo" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent className="bg-background border-border">
+                                    {/* Mapeamos lo que viene del BACKEND (availableConditions) */}
+                                    {availableConditions.map((conditionKey) => (
+                                      <SelectItem
+                                        key={conditionKey}
+                                        value={conditionKey}
+                                      >
+                                        {/* Usamos el label del registro o el key si falla */}
+                                        {CONDITION_REGISTRY[conditionKey]?.label || conditionKey}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-													if (ruleType === "customerTag") {
-														return (
-															<FormItem className="flex-1">
-																<FormLabel className="text-text-dark font-medium">
-																	Etiqueta de cliente
-																</FormLabel>
-																<Select
-																	value={valueField.value as string}
-																	onValueChange={valueField.onChange}
-																>
-																	<FormControl>
-																		<SelectTrigger className="border-border focus:ring-brand-teal">
-																			<SelectValue placeholder="Selecciona etiqueta" />
-																		</SelectTrigger>
-																	</FormControl>
-																	<SelectContent className="bg-background border-border">
-																		{customerTags.map((tag) => (
-																			<SelectItem
-																				key={tag.value}
-																				value={tag.value}
-																			>
-																				{tag.label}
-																			</SelectItem>
-																		))}
-																	</SelectContent>
-																</Select>
-																<FormMessage />
-															</FormItem>
-														);
-													}
+                          {/* CAMPO DE VALOR DINÁMICO */}
+                          {currentType && DynamicComponent ? (
+                             <FormField
+                                control={form.control}
+                                name={`rules.${index}.value`}
+                                render={({ field: valueField }) => (
+                                  // Aquí se renderiza el componente específico (MinAmount, Category, etc.)
+                                  // que definimos en componentRegistry.tsx
+                                  <DynamicComponent 
+                                    value={valueField.value} 
+                                    onChange={valueField.onChange} 
+                                  />
+                                )}
+                              />
+                          ) : (
+                            // Placeholder si no hay tipo seleccionado
+                            <div className="flex-1 flex items-center justify-center border border-dashed border-border rounded-md bg-secondary/20 text-muted-foreground text-sm">
+                                {currentType ? "Configuración no disponible" : "Selecciona una regla primero"}
+                            </div>
+                          )}
 
-													return (
-														<FormItem className="flex-1">
-															<FormLabel className="text-text-dark font-medium">
-																Valor
-															</FormLabel>
-															<FormControl>
-																<Input
-																	placeholder="Valor"
-																	className="border-border"
-																	{...valueField}
-																/>
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													);
-												}}
-											/>
+                          {/* Delete Button */}
+                          <div className="flex items-end">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => remove(index)}
+                              // Evitar borrar si es el único (opcional, quita disabled si prefieres)
+                              disabled={fields.length === 0} 
+                            >
+                              <Trash2 className="h-5 w-5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                );
+            })}
+          </div>
 
-											{/* Delete Button */}
-											<div className="flex items-end">
-												<Button
-													type="button"
-													variant="ghost"
-													size="icon"
-													className="text-destructive hover:text-destructive hover:bg-destructive/10"
-													onClick={() => remove(index)}
-												>
-													<Trash2 className="h-5 w-5" />
-												</Button>
-											</div>
-										</div>
-									</CardContent>
-								</Card>
-							</div>
-						))}
-					</div>
+          {/* Add Rule Button */}
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full border-dashed border-brand-teal text-brand-teal hover:bg-brand-teal/5 hover:text-brand-teal"
+            onClick={addRule}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Añadir Regla
+          </Button>
 
-					{/* Add Rule Button */}
-					<Button
-						type="button"
-						variant="outline"
-						className="w-full border-dashed border-brand-teal text-brand-teal hover:bg-brand-teal/5 hover:text-brand-teal"
-						onClick={addRule}
-					>
-						<Plus className="mr-2 h-4 w-4" />
-						Añadir Regla
-					</Button>
+          {form.formState.errors.rules && (
+            <p className="text-sm text-destructive">
+              {form.formState.errors.rules.message}
+            </p>
+          )}
 
-					{form.formState.errors.rules && (
-						<p className="text-sm text-destructive">
-							{form.formState.errors.rules.message}
-						</p>
-					)}
-
-					{/* Navigation Buttons */}
-					<div className="flex justify-between pt-4">
-						<Button
-							type="button"
-							variant="outline"
-							className="border-border text-text-dark hover:bg-secondary"
-							onClick={handleBack}
-						>
-							Anterior
-						</Button>
-						<Button
-							type="submit"
-							className="bg-brand-orange hover:bg-brand-orange-hover text-white font-medium px-8"
-						>
-							Siguiente
-						</Button>
-					</div>
-				</form>
-			</Form>
-		</div>
-	);
+          {/* Navigation Buttons */}
+          <div className="flex justify-between pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="border-border text-text-dark hover:bg-secondary"
+              onClick={handleBack}
+            >
+              Anterior
+            </Button>
+            <Button
+              type="submit"
+              className="bg-brand-orange hover:bg-brand-orange-hover text-white font-medium px-8"
+            >
+              Siguiente
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
+  );
 }
