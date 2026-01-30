@@ -1,5 +1,8 @@
+/* biome-ignore lint/suspicious/noUnknownAtRules: Tailwind directives */
 @tailwind base;
+/* biome-ignore lint/suspicious/noUnknownAtRules: Tailwind directives */
 @tailwind components;
+/* biome-ignore lint/suspicious/noUnknownAtRules: Tailwind directives */
 @tailwind utilities;
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
@@ -96,10 +99,12 @@ All colors MUST be HSL.
 
 @layer base {
   * {
+    /* biome-ignore lint/suspicious/noUnknownAtRules: Tailwind directives */
     @apply border-border;
   }
 
   body {
+    /* biome-ignore lint/suspicious/noUnknownAtRules: Tailwind directives */
     @apply bg-background text-foreground;
   }
 }

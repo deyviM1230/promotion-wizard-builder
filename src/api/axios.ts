@@ -2,7 +2,7 @@
 import axios from "axios";
 
 // Usamos tu link de devtunnels como base
-const API_URL = "https://ptzsk572-3000.brs.devtunnels.ms";
+const API_URL = "https://ptzsk572-3000.brs.devtunnels.ms/api";
 
 export const api = axios.create({
 	baseURL: API_URL,
