@@ -1,6 +1,7 @@
 import { Building2, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const DashboardHeader = () => {
 	const navigate = useNavigate();
@@ -8,14 +9,17 @@ export const DashboardHeader = () => {
 	return (
 		<div className="space-y-6 p-6 bg-gradient-to-r from-primary/5 to-transparent rounded-xl">
 			{/* Logo Section */}
-			<div className="flex items-center gap-3 border-b pb-6">
-				<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-teal/10">
-					<Building2 className="h-6 w-6 text-brand-teal" />
+			<div className="flex items-center justify-between border-b pb-6">
+				<div className="flex items-center gap-3">
+					<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-teal/10">
+						<Building2 className="h-6 w-6 text-brand-teal" />
+					</div>
+					<div>
+						<h2 className="text-lg font-semibold text-foreground">Mi Negocio</h2>
+						<p className="text-sm text-muted-foreground">Panel de promociones</p>
+					</div>
 				</div>
-				<div>
-					<h2 className="text-lg font-semibold text-foreground">Mi Negocio</h2>
-					<p className="text-sm text-muted-foreground">Panel de promociones</p>
-				</div>
+				<ThemeToggle />
 			</div>
 
 			{/* Title and Action */}
