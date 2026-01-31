@@ -13,7 +13,7 @@ export function WizardProgress() {
 	const { currentStep } = useWizard();
 
 	return (
-		<div className="w-full px-4 py-6">
+		<div className="w-full px-4 py-6 bg-primary/5 rounded-xl">
 			<div className="flex items-center justify-between max-w-2xl mx-auto">
 				{steps.map((step, index) => {
 					const isCompleted = currentStep > step.number;

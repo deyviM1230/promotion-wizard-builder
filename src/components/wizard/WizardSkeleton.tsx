@@ -37,7 +37,7 @@ export function WizardSkeleton() {
 				</div>
 
 				{/* Card skeleton (for rules/rewards) */}
-				<Card className="border-border">
+				<Card className="border-border bg-primary/5">
 					<CardContent className="pt-6">
 						<div className="flex flex-col md:flex-row gap-4">
 							<div className="flex-1 space-y-2">
@@ -54,7 +54,7 @@ export function WizardSkeleton() {
 				</Card>
 
 				{/* Another card skeleton */}
-				<Card className="border-border">
+				<Card className="border-border bg-primary/5">
 					<CardContent className="pt-6">
 						<div className="flex flex-col md:flex-row gap-4">
 							<div className="flex-1 space-y-2">
