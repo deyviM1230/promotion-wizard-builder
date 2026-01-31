@@ -1,4 +1,4 @@
-import type { PromotionBackendDTO } from "../lib/promotionSchema";
+// Tipos locales para el API
 import { api } from "./axios";
 
 // 1. Interfaz para lo que RECIBES en la lista (GET)
@@ -38,7 +38,7 @@ export const promotionApi = {
 
 	// GET: Detalle
 	getById: async (id: string) => {
-		const { data } = await api.get<PromotionBackendDTO>(`/promotions/${id}`);
+		const { data } = await api.get<PromotionListItem>(`/promotions/${id}`);
 		return data;
 	},
 
@@ -50,7 +50,7 @@ export const promotionApi = {
 
 	// PUT: Actualizar
 	update: async (id: string, payload: Partial<CreatePromotionPayload>) => {
-		const { data } = await api.put<PromotionBackendDTO>(
+		const { data } = await api.put<PromotionListItem>(
 			`/promotions/${id}`,
 			payload,
 		);
