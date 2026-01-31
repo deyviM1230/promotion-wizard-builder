@@ -31,7 +31,7 @@ function WizardContent({ onBack, isLoading = false }: PromotionWizardProps) {
 	};
 
 	return (
-		<div className="min-h-screen bg-background py-8 px-4">
+		<div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8 px-4">
 			<div className="max-w-4xl mx-auto">
 				{/* Header */}
 				<div className="mb-8">
@@ -79,7 +79,7 @@ function WizardContent({ onBack, isLoading = false }: PromotionWizardProps) {
 				<WizardProgress />
 
 				{/* Step Content */}
-				<Card className="mt-8 border-border shadow-sm">
+				<Card className="mt-8 border-border shadow-sm bg-card/80 backdrop-blur-sm">
 					<CardContent className="p-6 md:p-8">
 						{isLoading ? (
 							<WizardSkeleton />

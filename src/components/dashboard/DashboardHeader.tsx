@@ -6,7 +6,7 @@ export const DashboardHeader = () => {
 	const navigate = useNavigate();
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 p-6 bg-gradient-to-r from-primary/5 to-transparent rounded-xl">
 			{/* Logo Section */}
 			<div className="flex items-center gap-3 border-b pb-6">
 				<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-teal/10">
